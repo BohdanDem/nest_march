@@ -9,8 +9,9 @@ import {
   Post,
   Res,
 } from '@nestjs/common';
-import { UserService } from './user.service';
+
 import { UserCreateProfileDto } from './dto/user.dto';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -18,12 +19,12 @@ export class UserController {
 
   @Get('/list')
   async getAllUsers() {
-    return this.userService.getUsersList();
+    return await this.userService.getUsersList();
   }
 
   @Get('/:userId/profile')
   async getUserInfo(@Param() param: { userId: string }) {
-    return this.userService.getOneUser(param.userId);
+    return await this.userService.getOneUser(param.userId);
   }
 
   @Post(':id')
