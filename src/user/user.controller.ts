@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Res,
 } from '@nestjs/common';
 import { ApiExtraModels, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -18,14 +19,12 @@ import { UserService } from './user.service';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+  @ApiResponse({ status: HttpStatus.OK, description: 'RETURNED ALL MY USERS' })
   @Get('/list')
-  async getAllUsers() {
-    return await this.userService.getUsersList();
-  }
-
-  @Get('/:userId/profile')
-  async getUserInfo(@Param() param: { userId: string }) {
-    return await this.userService.getOneUser(param.userId);
+  async getAllUsers(@Res() res: any) {
+    return res
+      .status(HttpStatus.OK)
+      .json(await this.userService.getUsersList());
   }
 
   @ApiResponse({ status: HttpStatus.CREATED, type: UserCreateResponse })
@@ -36,12 +35,26 @@ export class UserController {
       .json(await this.userService.createUser(body));
   }
 
-  @Post('/address/:id')
-  async addUserAddress() {}
-
-  @Post('/city/:id')
-  async updateUserData() {}
-
+  @ApiResponse({
+    status: HttpStatus.NO_CONTENT,
+    description: 'USER IS DELETED',
+  })
   @Delete(':id')
-  async deleteUserAccount() {}
+  async deleteUserAccount(@Res() res: any, @Param('id') id: string) {
+    return res
+      .status(HttpStatus.NO_CONTENT)
+      .json(await this.userService.deleteUserAccount(id));
+  }
+
+  @ApiResponse({ status: HttpStatus.CREATED, type: UserCreateResponse })
+  @Put('update/:id')
+  async updateUserProfile(
+    @Body() body: Partial<UserCreateProfileDto>,
+    @Res() res: any,
+    @Param('id') id: string,
+  ) {
+    return res
+      .status(HttpStatus.CREATED)
+      .json(await this.userService.updateUser(body, id));
+  }
 }

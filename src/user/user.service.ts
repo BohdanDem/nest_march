@@ -5,10 +5,11 @@ import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
-  // const users = [];
-  private users = [];
-
   constructor(private readonly userRepository: UserRepository) {}
+
+  async getUsersList() {
+    return await this.userRepository.find();
+  }
 
   async createUser(userData: UserCreateProfileDto) {
     const userEmail = userData.email.trim();
@@ -29,11 +30,16 @@ export class UserService {
     }
   }
 
-  async getOneUser(userId: string) {
-    return this.users.find((item) => item.id === Number(userId))[0];
+  async deleteUserAccount(id: string) {
+    return await this.userRepository.delete(`${id}`);
   }
 
-  async getUsersList() {
-    return this.users;
+  async updateUser(user: Partial<UserCreateProfileDto>, id: string) {
+    //console.log(user, id);
+    try {
+      return await this.userRepository.update(id, user);
+    } catch (err) {
+      throw new HttpException('Update user failed', HttpStatus.BAD_REQUEST);
+    }
   }
 }
