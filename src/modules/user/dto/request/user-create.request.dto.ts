@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
@@ -7,34 +8,26 @@ import {
   IsString,
 } from 'class-validator';
 
-export class UserCreateProfileDto {
+export class UserCreateRequestDto {
+  @Transform(({ value }) => value.trim())
   @IsString()
   userName: string;
 
+  @Transform(({ value }) => value.trim().toLowerCase())
   @IsString()
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
-  @IsOptional()
+  @Transform(({ value }) => value.trim())
   @IsString()
   city: string;
 
   @IsNumber()
   @IsOptional()
-  age: number;
+  age?: number;
 
   @IsBoolean()
   @IsOptional()
-  status: boolean;
-}
-
-export class UserCreateResponse {
-  userName: string;
-  email: string;
-  city: string;
-  age: number;
-  status: boolean;
-  createdAt: Date;
-  id: string;
+  status?: boolean;
 }
