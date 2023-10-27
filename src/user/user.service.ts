@@ -1,45 +1,63 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
-import { UserCreateProfileDto } from './dto/user.dto';
+import { IList } from '../../common/interface/list.interface';
+import { UserEntity } from '../../database/entities/user.entity';
+import { UserCreateRequestDto } from './dto/request/user-create.request.dto';
+import { UserListQueryRequestDto } from './dto/request/user-list-query.request.dto';
+import { UserUpdateRequestDto } from './dto/request/user-update.request.dto';
 import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
-  async getUsersList() {
-    return await this.userRepository.find();
+  public async getAllUsers(
+    query: UserListQueryRequestDto,
+  ): Promise<IList<UserEntity>> {
+    return await this.userRepository.getAllUsers(query);
   }
 
-  async createUser(userData: UserCreateProfileDto) {
-    const userEmail = userData.email.trim();
-    const findUser = await this.userRepository.findOne({
-      where: { email: userEmail },
+  public async createUser(dto: UserCreateRequestDto): Promise<UserEntity> {
+    const findUser = await this.userRepository.findOneBy({
+      email: dto.email,
     });
     if (findUser) {
-      throw new HttpException('User already exist', HttpStatus.BAD_REQUEST);
+      throw new BadRequestException('User already exist');
     }
-    try {
-      const newUser = this.userRepository.create(userData);
-      if (!userData.city) {
-        newUser.city = 'Odessa';
-      }
-      return await this.userRepository.save(newUser);
-    } catch (err) {
-      throw new HttpException('Create user failed', HttpStatus.BAD_REQUEST);
+    const newUser = this.userRepository.create(dto);
+    if (!dto.city) {
+      newUser.city = 'Odessa';
     }
+    return await this.userRepository.save(newUser);
   }
 
-  async deleteUserAccount(id: string) {
-    return await this.userRepository.delete(`${id}`);
+  public async getUserById(userId: string): Promise<UserEntity> {
+    return await this.findUserByIdOrException(userId);
   }
 
-  async updateUser(user: Partial<UserCreateProfileDto>, id: string) {
-    //console.log(user, id);
-    try {
-      return await this.userRepository.update(id, user);
-    } catch (err) {
-      throw new HttpException('Update user failed', HttpStatus.BAD_REQUEST);
+  public async updateUser(
+    userId: string,
+    dto: UserUpdateRequestDto,
+  ): Promise<UserEntity> {
+    const entity = await this.findUserByIdOrException(userId);
+    this.userRepository.merge(entity, dto);
+    return await this.userRepository.save(entity);
+  }
+
+  public async deleteUser(userId: string): Promise<void> {
+    const entity = await this.findUserByIdOrException(userId);
+    await this.userRepository.remove(entity);
+  }
+
+  private async findUserByIdOrException(userId: string): Promise<UserEntity> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new UnprocessableEntityException('User entity not found');
     }
+    return user;
   }
 }

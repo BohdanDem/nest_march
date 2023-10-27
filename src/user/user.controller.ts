@@ -3,58 +3,69 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Post,
   Put,
-  Res,
+  Query,
 } from '@nestjs/common';
-import { ApiExtraModels, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { UserCreateProfileDto, UserCreateResponse } from './dto/user.dto';
+import { UserCreateRequestDto } from './dto/request/user-create.request.dto';
+import { UserListQueryRequestDto } from './dto/request/user-list-query.request.dto';
+import { UserUpdateRequestDto } from './dto/request/user-update.request.dto';
+import { UserDetailsResponseDto } from './dto/response/user-details.response.dto';
+import { UserListResponseDto } from './dto/response/user-list.response.dto';
+import { UserResponseMapper } from './user.response.mapper';
 import { UserService } from './user.service';
 
-@ApiTags('User')
-@ApiExtraModels(UserCreateResponse)
-@Controller('user')
+@ApiTags('Users')
+@Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-  @ApiResponse({ status: HttpStatus.OK, description: 'RETURNED ALL MY USERS' })
-  @Get('/list')
-  async getAllUsers(@Res() res: any) {
-    return res
-      .status(HttpStatus.OK)
-      .json(await this.userService.getUsersList());
+
+  @ApiOperation({ summary: 'Get list of users' })
+  @Get()
+  async getAllUsers(
+    @Query() query: UserListQueryRequestDto,
+  ): Promise<UserListResponseDto> {
+    const result = await this.userService.getAllUsers(query);
+    return UserResponseMapper.toListDto(result, query);
   }
 
-  @ApiResponse({ status: HttpStatus.CREATED, type: UserCreateResponse })
-  @Post('create')
-  async createUserProfile(@Body() body: UserCreateProfileDto, @Res() res: any) {
-    return res
-      .status(HttpStatus.CREATED)
-      .json(await this.userService.createUser(body));
+  @ApiOperation({ summary: 'Create new user' })
+  @Post()
+  async createUser(
+    @Body() body: UserCreateRequestDto,
+  ): Promise<UserDetailsResponseDto> {
+    const result = await this.userService.createUser(body);
+    return UserResponseMapper.toDetailsDto(result);
   }
 
-  @ApiResponse({
-    status: HttpStatus.NO_CONTENT,
-    description: 'USER IS DELETED',
-  })
-  @Delete(':id')
-  async deleteUserAccount(@Res() res: any, @Param('id') id: string) {
-    return res
-      .status(HttpStatus.NO_CONTENT)
-      .json(await this.userService.deleteUserAccount(id));
+  @ApiOperation({ summary: 'Get user by id' })
+  @Get(':userId')
+  async getUserById(
+    @Param('userId') userId: string,
+  ): Promise<UserDetailsResponseDto> {
+    const result = await this.userService.getUserById(userId);
+    return UserResponseMapper.toDetailsDto(result);
   }
 
-  @ApiResponse({ status: HttpStatus.CREATED, type: UserCreateResponse })
-  @Put('update/:id')
-  async updateUserProfile(
-    @Body() body: Partial<UserCreateProfileDto>,
-    @Res() res: any,
-    @Param('id') id: string,
-  ) {
-    return res
-      .status(HttpStatus.CREATED)
-      .json(await this.userService.updateUser(body, id));
+  @ApiOperation({ summary: 'Update user by id' })
+  @Put(':userId')
+  async updateUser(
+    @Param('userId') userId: string,
+    @Body() body: UserUpdateRequestDto,
+  ): Promise<UserDetailsResponseDto> {
+    const result = await this.userService.updateUser(userId, body);
+    return UserResponseMapper.toDetailsDto(result);
+  }
+
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Delete user by id' })
+  @Delete(':userId')
+  async deleteUser(@Param('userId') userId: string): Promise<void> {
+    await this.userService.deleteUser(userId);
   }
 }
