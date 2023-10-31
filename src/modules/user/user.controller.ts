@@ -9,7 +9,9 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { UserCreateRequestDto } from './dto/request/user-create.request.dto';
@@ -26,6 +28,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @ApiOperation({ summary: 'Get list of users' })
+  @UseGuards(AuthGuard())
   @Get()
   async getAllUsers(
     @Query() query: UserListQueryRequestDto,
@@ -67,5 +70,10 @@ export class UserController {
   @Delete(':userId')
   async deleteUser(@Param('userId') userId: string): Promise<void> {
     await this.userService.deleteUser(userId);
+  }
+
+  @Post('login')
+  async loginUser(@Body() body: any) {
+    return await this.userService.login(body);
   }
 }
