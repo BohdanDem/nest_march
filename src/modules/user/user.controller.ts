@@ -14,6 +14,8 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
+import { LogoutGuard } from '../../common/guards/logout.guard';
+import { UserLoginDto } from './dto/request/user-base.request.dto';
 import { UserCreateRequestDto } from './dto/request/user-create.request.dto';
 import { UserListQueryRequestDto } from './dto/request/user-list-query.request.dto';
 import { UserUpdateRequestDto } from './dto/request/user-update.request.dto';
@@ -73,7 +75,13 @@ export class UserController {
   }
 
   @Post('login')
-  async loginUser(@Body() body: any) {
+  async loginUser(@Body() body: UserLoginDto) {
     return await this.userService.login(body);
+  }
+
+  @Post('logout')
+  @UseGuards(AuthGuard(), LogoutGuard)
+  async logoutUser() {
+    return 'Exit user from API :)';
   }
 }
