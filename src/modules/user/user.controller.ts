@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { CityDecorator } from '../../common/decorators/city.decorator';
 import { CityEnum } from '../../common/enum/city.enum';
@@ -31,7 +31,7 @@ import { UserService } from './user.service';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get list of users' })
   @CityDecorator(CityEnum.LVIV)
   @UseGuards(AuthGuard(), CityGuard)

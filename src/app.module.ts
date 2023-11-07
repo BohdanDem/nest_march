@@ -8,6 +8,7 @@ import { CustomConfigService } from './config/config.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { CarModule } from './modules/car/car.module';
 import { UserModule } from './modules/user/user.module';
+import { AddressModule } from "./modules/address/address.module";
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UserModule } from './modules/user/user.module';
     }),
     UserModule,
     AuthModule,
+    AddressModule,
     CarModule,
   ],
   controllers: [],
