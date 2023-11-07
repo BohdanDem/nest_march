@@ -27,7 +27,7 @@ export class CityGuard implements CanActivate {
     }
     const user = request.user;
 
-    // can write tour logic const car = carRepository.findOne({})
+    // can write to your logic const car = carRepository.findOne({})
 
     if (!userTypeAllowed.includes(user.city)) {
       throw new HttpException('Access denied.', HttpStatus.FORBIDDEN);
