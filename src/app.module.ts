@@ -1,4 +1,7 @@
+import { join } from 'node:path';
+
 import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CustomConfigModule } from './config/config.module';
@@ -16,6 +19,9 @@ import { UserModule } from './modules/user/user.module';
     AddressModule,
     UserModule,
     CarModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
   ],
   controllers: [],
   providers: [],

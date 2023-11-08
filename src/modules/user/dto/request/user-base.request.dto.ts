@@ -34,6 +34,8 @@ export class UserBaseRequestDto {
   @IsBoolean()
   @IsOptional()
   status?: boolean;
+
+  avatar?: string;
 }
 
 export class UserLoginDto {
@@ -46,4 +48,16 @@ export class UserLoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+}
+
+export class UserLoginGoogleDto {
+  // @Transform(({ value }) => value.trim().toLowerCase())
+  // @IsString()
+  // @IsEmail()
+  // @IsNotEmpty()
+  // email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  accessToken: string;
 }

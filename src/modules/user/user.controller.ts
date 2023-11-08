@@ -9,16 +9,27 @@ import {
   Post,
   Put,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { diskStorage } from 'multer';
 
 import { CityDecorator } from '../../common/decorators/city.decorator';
 import { CityEnum } from '../../common/enum/city.enum';
 import { CityGuard } from '../../common/guards/city.guard';
 import { LogoutGuard } from '../../common/guards/logout.guard';
-import { UserLoginDto } from './dto/request/user-base.request.dto';
+import {
+  editFileName,
+  imageFileFilter,
+} from '../../common/utils/file.upload.utils';
+import {
+  UserLoginDto,
+  UserLoginGoogleDto,
+} from './dto/request/user-base.request.dto';
 import { UserCreateRequestDto } from './dto/request/user-create.request.dto';
 import { UserListQueryRequestDto } from './dto/request/user-list-query.request.dto';
 import { UserUpdateRequestDto } from './dto/request/user-update.request.dto';
@@ -44,10 +55,23 @@ export class UserController {
   }
 
   @ApiOperation({ summary: 'Create new user' })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './public',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
   @Post()
   async createUser(
     @Body() body: UserCreateRequestDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<UserDetailsResponseDto> {
+    if (file) {
+      body.avatar = `public/${file.filename}`;
+    }
     const result = await this.userService.createUser(body);
     return UserResponseMapper.toDetailsDto(result);
   }
@@ -88,5 +112,10 @@ export class UserController {
   @UseGuards(AuthGuard(), LogoutGuard)
   async logoutUser() {
     return 'Exit user from API :)';
+  }
+
+  @Post('social')
+  async loginUserByGoogle(@Body() body: UserLoginGoogleDto) {
+    return await this.userService.loginSocial(body);
   }
 }
