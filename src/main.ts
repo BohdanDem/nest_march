@@ -7,7 +7,7 @@ import { SwaggerHelper } from './common/helper/swagger.helper';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
   const config = new DocumentBuilder()
     .setTitle('Okten')
@@ -28,4 +28,4 @@ async function bootstrap() {
 
   await app.listen(3001);
 }
-bootstrap().then();
+void bootstrap();
